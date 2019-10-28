@@ -1,0 +1,33 @@
+service: sls-whatsapp
+plugins:
+  - serverless-offline
+  - serverless-webpack
+  - serverless-dotenv-plugin
+
+frameworkVersion: '>=1.5.3 <2.0.0'
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+  stage: ${opt:stage, 'dev'}
+  region: us-west-2
+  logRetentionInDays: 30
+  stackTags:
+    Environment: ${self:provider.stage}
+    Product: whatsapp
+  iamRoleStatements:
+  - Effect: Allow
+    Action: [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents"
+    ]
+    Resource: "*"
+
+functions:
+  processMessage:
+    handler: src/handlers/processMessage.sendMessage
+    events:
+      - schedule:
+          rate: rate(1 day)
+          enabled: true
